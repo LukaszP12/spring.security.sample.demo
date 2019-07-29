@@ -2,6 +2,7 @@ package com.spring.security.sample.demo;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
@@ -15,6 +16,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public UserDetailsService userDetailsService()
     {
+        UserDetails moderator = User.withDefaultPasswordEncoder()
+                .username("user")
+                .password("user1")
+                .roles("MODERATOR")
+                .build();
+
         UserDetails user = User.withDefaultPasswordEncoder()
             .username("user")
             .password("user1")
@@ -27,18 +34,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .roles("ADMIN")
                 .build();
 
-        return new InMemoryUserDetailsManager(user, admin);
+        return new InMemoryUserDetailsManager(moderator, admin);
     }
 
     // aplikacja zanim obsłuży żądanie, sprawdza, że osoba ma uprawnienia
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().
-                antMatchers("/hello").permitAll() // sprawdza czy odpowiednie uprawnienia zostaly przypisane do url
-                 .anyRequest().hasRole("ADMIN")
+        http.httpBasic().and().authorizeRequests()
+                .antMatchers(HttpMethod.GET,"/api").permitAll() // sprawdza czy odpowiednie uprawnienia zostaly przypisane do url
+                .antMatchers(HttpMethod.POST,"/api").hasRole("MODERATOR") // sprawdza czy odpowiednie uprawnienia zostaly przypisane do url
+                .antMatchers(HttpMethod.DELETE,"/api").hasRole("ADMIN")
+                .anyRequest().hasRole("ADMIN")
                  .and()
                  .formLogin().permitAll()
                  .and()
-                 .logout().permitAll();
+                 .logout().permitAll()
+                 .and()
+                .csrf().disable();
     }
 }
