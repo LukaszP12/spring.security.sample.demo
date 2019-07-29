@@ -42,7 +42,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.httpBasic().and().authorizeRequests()
                 .antMatchers(HttpMethod.GET,"/api").permitAll() // sprawdza czy odpowiednie uprawnienia zostaly przypisane do url
-                .antMatchers(HttpMethod.POST,"/api").hasRole("MODERATOR") // sprawdza czy odpowiednie uprawnienia zostaly przypisane do url
+                .antMatchers(HttpMethod.POST,"/api").hasAnyRole("MODERATOR") // sprawdza czy odpowiednie uprawnienia zostaly przypisane do url
                 .antMatchers(HttpMethod.DELETE,"/api").hasRole("ADMIN")
                 .anyRequest().hasRole("ADMIN")
                  .and()
